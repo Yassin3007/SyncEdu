@@ -27,8 +27,8 @@ class TeacherRequest extends FormRequest
             'phone' => 'required|string|max:255',
             'division' => 'nullable|string|max:255',
             'school' => 'required|string|max:255',
-            'stage' => 'required|string|max:255',
-            'grade' => 'required|string|max:255',
+//            'stage' => 'required|string|max:255',
+//            'grade' => 'required|string|max:255',
         ];
     }
 }

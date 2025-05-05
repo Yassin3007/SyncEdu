@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Filters\TeacherFilter;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TeacherRequest;
+use App\Http\Resources\TeacherResource;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 
@@ -13,7 +16,14 @@ class TeacherController extends Controller
      */
     public function index()
     {
-        //
+        $filter = new TeacherFilter(Request());
+        if(Request()->has('paginate')){
+            $perPage = Request()->input('per_page', 15);
+            $students = Teacher::query()->filter($filter)->paginate($perPage);;
+
+        }
+        $students = Teacher::query()->filter($filter)->get();
+        return apiResponse('api.fetched', [TeacherResource::collection($students)]);
     }
 
     /**
@@ -27,9 +37,12 @@ class TeacherController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(TeacherRequest $request)
     {
-        //
+        $validated = $request->validated();
+        Teacher::query()->create($validated);
+        return apiResponse('api.success');
+
     }
 
     /**
@@ -51,9 +64,10 @@ class TeacherController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Teacher $teacher)
+    public function update(TeacherRequest $request, Teacher $teacher)
     {
-        //
+        $teacher->update($request->validated());
+        return apiResponse('api.success');
     }
 
     /**
@@ -61,6 +75,7 @@ class TeacherController extends Controller
      */
     public function destroy(Teacher $teacher)
     {
-        //
+        $teacher->delete();
+        return apiResponse('api.success');
     }
 }
