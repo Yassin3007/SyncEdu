@@ -22,14 +22,15 @@ class StudentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
+            'name_ar' => 'required|string|max:255',
             'national_id' => 'nullable|string|max:255',
             'guardian_number' => 'nullable|string|max:255',
             'phone' => 'required|string|max:255',
             'division' => 'nullable|string|max:255',
             'school' => 'required|string|max:255',
-            'stage' => 'required|string|max:255',
-            'grade' => 'required|string|max:255',
+            'stage_id' => 'required|exists:stages,id',
+            'grade_id' => 'required|exists:grades,id',
             'subscription_type' => 'required|string|max:255',
         ];
     }
