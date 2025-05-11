@@ -40,7 +40,10 @@ class TeacherController extends Controller
     public function store(TeacherRequest $request)
     {
         $validated = $request->validated();
-        Teacher::query()->create($validated);
+        $teacher = Teacher::query()->create($validated);
+        $teacher->subjects()->attach($validated['subjects']);
+        $teacher->grades()->attach($validated['grades']);
+
         return apiResponse('api.success');
 
     }
@@ -67,6 +70,12 @@ class TeacherController extends Controller
     public function update(TeacherRequest $request, Teacher $teacher)
     {
         $teacher->update($request->validated());
+        if($request->has('subjects')){
+            $teacher->subjects()->sync($request->subjects);
+        }
+        if($request->has('grades')){
+            $teacher->grades()->sync($request->grades);
+        }
         return apiResponse('api.success');
     }
 

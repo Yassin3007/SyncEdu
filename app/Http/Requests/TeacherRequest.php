@@ -30,6 +30,10 @@ class TeacherRequest extends FormRequest
             'school' => 'required|string|max:255',
 //            'stage' => 'required|string|max:255',
 //            'grade' => 'required|string|max:255',
+            'subjects' => 'required|array',
+            'subjects.*' => 'exists:subjects,id',
+            'grades' => 'required|array',
+            'grades.*' => 'exists:grades,id',
         ];
     }
 }
