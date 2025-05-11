@@ -1,7 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\SubjectRequest;
+use App\Http\Resources\SubjectResource;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 
@@ -12,7 +15,13 @@ class SubjectController extends Controller
      */
     public function index()
     {
-        //
+        if(Request()->has('paginate')){
+            $perPage = Request()->input('per_page', 15);
+            $subjects = Subject::query()->paginate($perPage);;
+        }
+        $subjects = Subject::all();
+        return apiResponse('api.fetched', [SubjectResource::collection($subjects)]);
+
     }
 
     /**
@@ -26,9 +35,11 @@ class SubjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(SubjectRequest $request)
     {
-        //
+        $validated = $request->validated();
+        Subject::query()->create($validated);
+        return apiResponse('api.success');
     }
 
     /**
@@ -50,9 +61,10 @@ class SubjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Subject $subject)
+    public function update(SubjectRequest $request, Subject $subject)
     {
-        //
+        $subject->update($request->validated());
+        return apiResponse('api.success');
     }
 
     /**
@@ -60,6 +72,7 @@ class SubjectController extends Controller
      */
     public function destroy(Subject $subject)
     {
-        //
+        $subject->delete();
+        return apiResponse('api.success');
     }
 }

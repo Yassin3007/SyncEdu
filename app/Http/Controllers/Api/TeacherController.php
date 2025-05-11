@@ -19,11 +19,11 @@ class TeacherController extends Controller
         $filter = new TeacherFilter(Request());
         if(Request()->has('paginate')){
             $perPage = Request()->input('per_page', 15);
-            $students = Teacher::query()->filter($filter)->paginate($perPage);;
+            $teachers = Teacher::query()->filter($filter)->paginate($perPage);;
 
         }
-        $students = Teacher::query()->filter($filter)->get();
-        return apiResponse('api.fetched', [TeacherResource::collection($students)]);
+        $teachers = Teacher::query()->filter($filter)->get();
+        return apiResponse('api.fetched', [TeacherResource::collection($teachers)]);
     }
 
     /**
