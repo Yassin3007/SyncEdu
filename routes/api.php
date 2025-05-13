@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
@@ -32,6 +33,12 @@ Route::get('/subjects', [SubjectController::class, 'index']);
 Route::post('/subjects', [SubjectController::class, 'store']);
 Route::post('/subjects/{subject}', [SubjectController::class, 'update']);
 Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy']);
+
+//lesson routes
+Route::get('/lessons', [LessonController::class, 'index']);
+Route::post('/lessons', [LessonController::class, 'store']);
+Route::post('/lessons/{lesson}', [LessonController::class, 'update']);
+Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
 
 // general routes
 Route::get('/stages', [HomeController::class, 'getStages']);

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('national_id')->nullable();
             $table->string('guardian_number')->nullable();
             $table->string('phone')->nullable();
-            $table->string('division')->nullable();
+            $table->string('division_id')->nullable();
             $table->string('school')->nullable();
             $table->foreignId('stage_id')->nullable()->constrained();
             $table->foreignId('grade_id')->nullable()->constrained();

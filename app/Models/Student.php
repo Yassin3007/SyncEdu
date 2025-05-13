@@ -13,7 +13,7 @@ class Student extends Model
         'national_id',
         'guardian_number',
         'phone',
-        'division',
+        'division_id',
         'school',
         'stage_id',
         'grade_id',

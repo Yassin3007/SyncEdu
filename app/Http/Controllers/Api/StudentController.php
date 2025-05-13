@@ -17,18 +17,16 @@ class StudentController extends Controller
     public function index()
     {
         $filter = new StudentFilter(Request());
-        $students = Student::query()->filter($filter)->get();
-        $perPage = Request()->input('per_page', 15);
+        if(Request()->has('paginate')){
+            $perPage = Request()->input('per_page', 15);
+            $students = Student::query()->filter($filter)->paginate($perPage);
+        }else{
+            $students = Student::query()->filter($filter)->get();
+        }
         return apiResponse('api.fetched', [StudentResource::collection($students)]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+
 
     /**
      * Store a newly created resource in storage.
