@@ -18,9 +18,11 @@ Route::post('/login', [AuthController::class, 'login']);
 
 //student routes
 Route::get('/students', [StudentController::class, 'index']);
+Route::get('/students/{student}', [StudentController::class, 'show']);
 Route::post('/students', [StudentController::class, 'store']);
 Route::post('/students/{student}', [StudentController::class, 'update']);
 Route::delete('/students/{student}', [StudentController::class, 'destroy']);
+Route::post('/students/bulk/move', [StudentController::class, 'bulkMove']);
 
 //teacher routes
 Route::get('/teachers', [TeacherController::class, 'index']);

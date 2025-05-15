@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StudentRequest extends FormRequest
 {
@@ -13,6 +14,7 @@ class StudentRequest extends FormRequest
     {
         return true;
     }
+
 
     /**
      * Get the validation rules that apply to the request.
@@ -34,4 +36,18 @@ class StudentRequest extends FormRequest
             'subscription_type' => 'required|string|max:255',
         ];
     }
+
+//    public function after(): array
+//    {
+//        return [
+//            function (Validator $validator) {
+//                if ($this->somethingElseIsInvalid()) {
+//                    $validator->errors()->add(
+//                        'field',
+//                        'Something is wrong with this field!'
+//                    );
+//                }
+//            }
+//        ];
+//    }
 }

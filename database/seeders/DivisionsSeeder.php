@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DivisionsSeeder extends Seeder
 {
@@ -17,15 +18,15 @@ class DivisionsSeeder extends Seeder
 
         $divisions = [
             [
-                'name_en' => 'School Education',
-                'name_ar' => 'التعليم المدرسي',
+                'name_en' => 'scientific',
+                'name_ar' => 'علمي',
                 'stage_id' => 3,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
             [
-                'name_en' => 'Higher Education',
-                'name_ar' => 'التعليم العالي',
+                'name_en' => 'literary',
+                'name_ar' => 'ادبي',
                 'stage_id' => 3,
                 'created_at' => $now,
                 'updated_at' => $now,

@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             StagesSeeder::class,  // Make sure StagesSeeder runs first
             GradesSeeder::class,
+            DivisionsSeeder::class,
             // Other seeders...
         ]);
         User::factory()->create([

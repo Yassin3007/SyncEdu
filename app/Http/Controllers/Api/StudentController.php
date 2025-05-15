@@ -44,7 +44,8 @@ class StudentController extends Controller
      */
     public function show(Student $student)
     {
-        //
+        return apiResponse('api.success', [new StudentResource($student)]);
+
     }
 
     /**
@@ -71,5 +72,23 @@ class StudentController extends Controller
     {
         $student->delete();
         return apiResponse('api.success');
+    }
+
+    public function bulkMove(Request $request)
+    {
+        $request->validate([
+            'students' => 'required|array',
+            'students.*' => 'required|exists:students,id',
+            'stage_id' => 'required|exists:stages,id',
+            'grade_id' => 'required|exists:grades,id',
+        ]);
+        Student::query()->whereIn('id', $request->students)->each(function ($student) use ($request) {
+            $student->update([
+                'stage_id' => $request->stage_id,
+                'grade_id' => $request->grade_id,
+            ]);
+        });
+        return apiResponse('api.success');
+
     }
 }
