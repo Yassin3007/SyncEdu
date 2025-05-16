@@ -43,6 +43,7 @@ class TeacherController extends Controller
         $teacher = Teacher::query()->create($validated);
         $teacher->subjects()->attach($validated['subjects']);
         $teacher->grades()->attach($validated['grades']);
+        $teacher->stages()->attach($validated['stages']);
 
         return apiResponse('api.success');
 
@@ -53,7 +54,7 @@ class TeacherController extends Controller
      */
     public function show(Teacher $teacher)
     {
-        //
+        return apiResponse('api.success',[new TeacherResource($teacher)]);
     }
 
     /**

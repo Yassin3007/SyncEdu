@@ -35,4 +35,9 @@ class Teacher extends Model
     {
         return $this->belongsToMany(Grade::class);
     }
+    public function stages()
+    {
+        return $this->belongsToMany(Stage::class);
+    }
+
 }

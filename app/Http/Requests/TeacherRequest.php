@@ -34,6 +34,8 @@ class TeacherRequest extends FormRequest
             'subjects.*' => 'exists:subjects,id',
             'grades' => 'required|array',
             'grades.*' => 'exists:grades,id',
+            'stages' => 'required|array',
+            'stages.*' => 'exists:stages,id',
         ];
     }
 }

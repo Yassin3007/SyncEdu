@@ -28,6 +28,7 @@ Route::post('/students/bulk/move', [StudentController::class, 'bulkMove']);
 Route::get('/teachers', [TeacherController::class, 'index']);
 Route::post('/teachers', [TeacherController::class, 'store']);
 Route::post('/teachers/{teacher}', [TeacherController::class, 'update']);
+Route::get('/teachers/{teacher}', [TeacherController::class, 'show']);
 Route::delete('/teachers/{teacher}', [TeacherController::class, 'destroy']);
 
 //subject routes
