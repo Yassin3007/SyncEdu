@@ -17,13 +17,14 @@ class LessonController extends Controller
     public function index()
     {
         $filter = new LessonFilter(Request());
-        if(Request()->has('paginate')){
+        $lessons = Lesson::query()->with(['teacher','subject'])->filter($filter) ;
+        if(Request()->boolean('paginate')){
             $perPage = Request()->input('per_page', 15);
-            $lessons = Lesson::query()->with(['teacher','subject'])->filter($filter)->paginate($perPage);
+            $lessons = $lessons->paginate($perPage);
         }else{
-            $lessons = Lesson::query()->with(['teacher','subject'])->filter($filter)->get();
+            $lessons = $lessons->get();
         }
-        return apiResponse('api.fetched', [LessonResource::collection($lessons)]);
+        return LessonResource::collection($lessons);
     }
 
     /**
@@ -32,8 +33,8 @@ class LessonController extends Controller
     public function store(LessonRequest $request)
     {
         $validated = $request->validated();
-        Lesson::query()->create($validated);
-        return apiResponse('api.success');
+        $lesson = Lesson::query()->create($validated);
+        return new LessonResource($lesson);
 
     }
 
@@ -42,7 +43,7 @@ class LessonController extends Controller
      */
     public function show(Lesson $lesson)
     {
-        //
+        return new LessonResource($lesson);
     }
 
 
@@ -53,7 +54,7 @@ class LessonController extends Controller
     {
         $validated = $request->validated();
         $lesson->update($validated);
-        return apiResponse('api.success');
+        return new LessonResource($lesson);
     }
 
     /**

@@ -39,6 +39,7 @@ Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy']);
 
 //lesson routes
 Route::get('/lessons', [LessonController::class, 'index']);
+Route::get('/lessons/{lesson}', [LessonController::class, 'show']);
 Route::post('/lessons', [LessonController::class, 'store']);
 Route::post('/lessons/{lesson}', [LessonController::class, 'update']);
 Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
