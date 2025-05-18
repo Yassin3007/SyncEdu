@@ -3,9 +3,12 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -52,3 +55,44 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Roles API endpoints
+Route::apiResource('roles', RoleController::class);
+
+// Permissions API endpoints
+Route::apiResource('permissions', PermissionController::class);
+
+// User Role Management
+Route::post('users/{user}/roles', [\App\Http\Controllers\API\UserRoleController::class, 'assignRoles']);
+Route::get('users/{user}/roles', [\App\Http\Controllers\API\UserRoleController::class, 'getUserRolesAndPermissions']);
+Route::delete('users/{user}/roles', [\App\Http\Controllers\API\UserRoleController::class, 'removeRole']);
+
+
+
+// User CRUD routes
+Route::apiResource('users', UserController::class);
+
+// Additional user management routes
+Route::put('users/{user}/activate', [UserController::class, 'activate'])
+    ->name('users.activate');
+
+// Force delete - only for admin users with special permission
+Route::delete('users/{user}/force', [UserController::class, 'forceDestroy'])
+    ->name('users.force-destroy')
+    ->middleware('permission:force-delete-users');

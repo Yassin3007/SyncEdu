@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('day');
             $table->time('start');
             $table->time('end');
+            $table->integer('price')->default(0);
+            $table->float('teacher_rate')->default(0);
             $table->string('status')->nullable();
             $table->timestamps();
         });
