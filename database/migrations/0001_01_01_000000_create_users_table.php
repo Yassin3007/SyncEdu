@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('password');
             $table->string('national_id')->nullable();
             $table->string('phone')->nullable();
-            $table->foreignId('role_id')->constrained();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->boolean('active')->default(true);

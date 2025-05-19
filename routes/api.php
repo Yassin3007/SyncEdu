@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserRoleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -73,7 +74,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 // Roles API endpoints
-Route::apiResource('roles', RoleController::class);
+
+Route::get('roles',[RoleController::class, 'index']);
+Route::get('roles/{role}',[RoleController::class, 'show']);
+Route::post('roles',[RoleController::class, 'store']);
+Route::post('roles/{role}',[RoleController::class, 'update']);
+Route::delete('roles/{role}',[RoleController::class, 'destroy']);
+//Route::apiResource('roles', RoleController::class);
 
 // Permissions API endpoints
 Route::apiResource('permissions', PermissionController::class);

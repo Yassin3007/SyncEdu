@@ -17,11 +17,8 @@ class RoleController extends Controller
     {
         $roles = Role::with('permissions')->get();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Roles retrieved successfully',
-            'data' => RoleResource::collection($roles)
-        ]);
+        return RoleResource::collection($roles);
+
     }
 
 
@@ -33,11 +30,7 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Role created successfully',
-            'data' => new RoleResource($role->load('permissions'))
-        ], 201);
+        return  new RoleResource($role);
     }
 
 
@@ -45,11 +38,8 @@ class RoleController extends Controller
     {
         $role = Role::with('permissions')->findOrFail($id);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Role retrieved successfully',
-            'data' => new RoleResource($role)
-        ]);
+        return  new RoleResource($role);
+
     }
 
 
@@ -66,11 +56,8 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Role updated successfully',
-            'data' => new RoleResource($role->load('permissions'))
-        ]);
+        return  new RoleResource($role);
+
     }
 
 
@@ -80,7 +67,6 @@ class RoleController extends Controller
         $role->delete();
 
         return response()->json([
-            'status' => true,
             'message' => 'Role deleted successfully'
         ]);
     }
