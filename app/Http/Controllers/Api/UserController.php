@@ -7,182 +7,286 @@ use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+
+
     /**
-     * Display a listing of users.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of the users.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = User::query();
+        $query = User::with('roles');
 
-        // Filter by active status if provided
-        if ($request->has('active')) {
-            $query->where('active', $request->active);
-        }
-
-        // Filter by role if provided
-        if ($request->has('role_id')) {
-            $query->where('role_id', $request->role_id);
-        }
-
-        // Search by name, email or phone
-        if ($request->has('search')) {
+        // Search functionality
+        if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('national_id', 'like', "%{$search}%");
+                    ->orWhere('national_id', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
-        // Sorting
-        $sortField = $request->sort_by ?? 'created_at';
-        $sortDirection = $request->sort_direction ?? 'desc';
-        $query->orderBy($sortField, $sortDirection);
+        // Filter by status
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('active', $request->status == '1');
+        }
 
-        // Pagination
-        $perPage = $request->per_page ?? 15;
-        $users = $query->paginate($perPage);
+        // Filter by role
+        if ($request->has('role') && $request->role) {
+            $query->role($request->role);
+        }
 
-        return UserResource::collection($users);
+        $perPage = $request->get('per_page', 15);
+        $users = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data' => UserResource::collection($users),
+            'meta' => [
+                'current_page' => $users->currentPage(),
+                'last_page' => $users->lastPage(),
+                'per_page' => $users->perPage(),
+                'total' => $users->total(),
+            ]
+        ]);
     }
 
     /**
      * Store a newly created user in storage.
-     *
-     * @param  \App\Http\Requests\User\StoreUserRequest  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request): JsonResponse
     {
-        $userData = $request->validated();
-        $userData['password'] = Hash::make($userData['password']);
+        try {
+            $validated = $request->validated();
 
-        $user = User::create($userData);
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'password' => Hash::make($validated['password']),
+                'national_id' => $validated['national_id'] ?? null,
+                'phone' => $validated['phone'] ?? null,
+                'start_date' => $validated['start_date'] ?? null,
+                'end_date' => $validated['end_date'] ?? null,
+                'active' => $validated['active'] ?? true,
+                'salary' => $validated['salary'] ?? null,
+            ]);
 
-        // Assign permissions based on role if using Spatie permissions
-        if (class_exists('\Spatie\Permission\Models\Role')) {
-            $role = \Spatie\Permission\Models\Role::find($user->role_id);
-            if ($role) {
-                $user->syncRoles([$role->name]);
+            // Assign roles to user
+            if (isset($validated['roles'])) {
+                $roles = Role::whereIn('id', $validated['roles'])->get();
+                $user->assignRole($roles);
             }
-        }
 
-        return response()->json([
-            'message' => 'User created successfully',
-            'data' => new UserResource($user)
-        ], 201);
+            $user->load('roles');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully.',
+                'data' => new UserResource($user)
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create user.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
      * Display the specified user.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(User $user): JsonResponse
     {
-        $user = User::findOrFail($id);
+        $user->load('roles', 'permissions');
 
         return response()->json([
+            'success' => true,
             'data' => new UserResource($user)
         ]);
     }
 
     /**
      * Update the specified user in storage.
-     *
-     * @param  \App\Http\Requests\User\UpdateUserRequest  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
-    public function update(UpdateUserRequest $request, $id)
+    public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
-        $user = User::findOrFail($id);
-        $userData = $request->validated();
+        try {
+            $validated = $request->validated();
 
-        // Only hash the password if it's provided
-        if (isset($userData['password'])) {
-            $userData['password'] = Hash::make($userData['password']);
-        }
+            $updateData = [
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'national_id' => $validated['national_id'] ?? null,
+                'phone' => $validated['phone'] ?? null,
+                'start_date' => $validated['start_date'] ?? null,
+                'end_date' => $validated['end_date'] ?? null,
+                'active' => $validated['active'] ?? $user->active,
+                'salary' => $validated['salary'] ?? null,
+            ];
 
-        $user->update($userData);
-
-        // Update role if changed and using Spatie permissions
-        if (isset($userData['role_id']) && class_exists('\Spatie\Permission\Models\Role')) {
-            $role = \Spatie\Permission\Models\Role::find($userData['role_id']);
-            if ($role) {
-                $user->syncRoles([$role->name]);
+            // Only update password if provided
+            if (!empty($validated['password'])) {
+                $updateData['password'] = Hash::make($validated['password']);
             }
-        }
 
-        return response()->json([
-            'message' => 'User updated successfully',
-            'data' => new UserResource($user)
-        ]);
+            $user->update($updateData);
+
+            // Sync roles
+            if (isset($validated['roles'])) {
+                $roles = Role::whereIn('id', $validated['roles'])->get();
+                $user->syncRoles($roles);
+            }
+
+            $user->load('roles');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully.',
+                'data' => new UserResource($user)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update user.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
      * Remove the specified user from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $user): JsonResponse
     {
-        $user = User::findOrFail($id);
+        try {
+            // Prevent deleting the current authenticated user
+            if (auth()->id() === $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You cannot delete your own account.'
+                ], 403);
+            }
 
-        // Instead of permanently deleting, you might want to deactivate
-        $user->active = false;
-        $user->save();
+            $user->delete();
 
-        // If you want hard delete, uncomment the next line
-        // $user->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully.'
+            ]);
 
-        return response()->json([
-            'message' => 'User deactivated successfully'
-        ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete user.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Activate a deactivated user.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Reset user password.
      */
-    public function activate($id)
+    public function resetPassword(Request $request, User $user): JsonResponse
     {
-        $user = User::findOrFail($id);
-        $user->active = true;
-        $user->save();
+        try {
+            $validated = $request->validate([
+                'password' => 'required|string|min:8|confirmed',
+            ]);
 
-        return response()->json([
-            'message' => 'User activated successfully',
-            'data' => new UserResource($user)
-        ]);
+            $user->update([
+                'password' => Hash::make($validated['password'])
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Password reset successfully.'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to reset password.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Hard delete a user from the database.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Send password reset link to user.
      */
-    public function forceDestroy($id)
+    public function sendPasswordResetLink(User $user): JsonResponse
     {
-        $user = User::findOrFail($id);
-        $user->delete();
+        try {
+            $status = Password::sendResetLink(['email' => $user->email]);
+
+            if ($status === Password::RESET_LINK_SENT) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Password reset link sent to user email.'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send password reset link.'
+            ], 400);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to send password reset link.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Toggle user active status.
+     */
+    public function toggleStatus(User $user): JsonResponse
+    {
+        try {
+            $user->update(['active' => !$user->active]);
+
+            $status = $user->active ? 'activated' : 'deactivated';
+
+            return response()->json([
+                'success' => true,
+                'message' => "User {$status} successfully.",
+                'data' => new UserResource($user)
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to toggle user status.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all roles for user assignment.
+     */
+    public function getRoles(): JsonResponse
+    {
+        $roles = Role::select('id', 'name')->get();
 
         return response()->json([
-            'message' => 'User permanently deleted'
+            'success' => true,
+            'data' => $roles
         ]);
     }
 }

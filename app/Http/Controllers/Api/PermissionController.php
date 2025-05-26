@@ -14,11 +14,7 @@ class PermissionController extends Controller
     {
         $permissions = Permission::all();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Permissions retrieved successfully',
-            'data' => PermissionResource::collection($permissions)
-        ]);
+        return PermissionResource::collection($permissions) ;
     }
 
 
@@ -33,23 +29,13 @@ class PermissionController extends Controller
             'guard_name' => 'api'
         ]);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Permission created successfully',
-            'data' => new PermissionResource($permission)
-        ], 201);
+        return  new PermissionResource($permission);
     }
 
 
-    public function show($id)
+    public function show(Permission $permission)
     {
-        $permission = Permission::findOrFail($id);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Permission retrieved successfully',
-            'data' => new PermissionResource($permission)
-        ]);
+        return  new PermissionResource($permission);
     }
 
 
@@ -62,18 +48,12 @@ class PermissionController extends Controller
         $permission = Permission::findOrFail($id);
         $permission->name = $request->name;
         $permission->save();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Permission updated successfully',
-            'data' => new PermissionResource($permission)
-        ]);
+        return new PermissionResource($permission);
     }
 
 
-    public function destroy($id)
+    public function destroy(Permission $permission)
     {
-        $permission = Permission::findOrFail($id);
         $permission->delete();
 
         return response()->json([

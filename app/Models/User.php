@@ -2,21 +2,20 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable,  HasRoles;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
@@ -24,7 +23,6 @@ class User extends Authenticatable
         'password',
         'national_id',
         'phone',
-        'role_id',
         'start_date',
         'end_date',
         'active',
@@ -34,7 +32,7 @@ class User extends Authenticatable
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -51,10 +49,55 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'active' => 'boolean',
             'start_date' => 'date',
             'end_date' => 'date',
-            'salary' => 'integer',
+            'active' => 'boolean',
         ];
+    }
+
+    /**
+     * Scope a query to only include active users.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('active', true);
+    }
+
+    /**
+     * Scope a query to only include inactive users.
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('active', false);
+    }
+
+    /**
+     * Get the user's full name with additional info.
+     */
+    public function getFullInfoAttribute()
+    {
+        return $this->name . ' (' . $this->email . ')';
+    }
+
+    /**
+     * Check if user is currently employed (between start and end date).
+     */
+    public function isCurrentlyEmployed()
+    {
+        $today = now()->toDateString();
+
+        if (!$this->start_date) {
+            return false;
+        }
+
+        if ($this->start_date > $today) {
+            return false;
+        }
+
+        if ($this->end_date && $this->end_date < $today) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -27,7 +27,8 @@ class RoleController extends Controller
         $role = Role::create(['name' => $request->name, 'guard_name' => 'api']);
 
         if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+            $permissions = Permission::whereIn('id',$request->permissions)->pluck('name')->toArray(); ;
+            $role->syncPermissions($permissions);
         }
 
         return  new RoleResource($role);
@@ -45,7 +46,7 @@ class RoleController extends Controller
 
     public function update(UpdateRoleRequest $request, $id)
     {
-        $role = Role::findOrFail($id);
+        $role = Role::with('permissions')->findOrFail($id);
 
         if ($request->has('name')) {
             $role->name = $request->name;
@@ -53,7 +54,8 @@ class RoleController extends Controller
         }
 
         if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+            $permissions = Permission::whereIn('id',$request->permissions)->pluck('name')->toArray(); ;
+            $role->syncPermissions($permissions);
         }
 
         return  new RoleResource($role);

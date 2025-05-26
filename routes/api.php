@@ -83,7 +83,12 @@ Route::delete('roles/{role}',[RoleController::class, 'destroy']);
 //Route::apiResource('roles', RoleController::class);
 
 // Permissions API endpoints
-Route::apiResource('permissions', PermissionController::class);
+Route::get('permissions',[PermissionController::class, 'index']);
+Route::get('permissions/{permission}',[PermissionController::class, 'show']);
+Route::post('permissions',[PermissionController::class, 'store']);
+Route::post('permissions/{permission}',[PermissionController::class, 'update']);
+Route::delete('permissions/{permission}',[PermissionController::class, 'destroy']);
+//Route::apiResource('permissions', PermissionController::class);
 
 // User Role Management
 Route::post('users/{user}/roles', [\App\Http\Controllers\API\UserRoleController::class, 'assignRoles']);
@@ -93,7 +98,30 @@ Route::delete('users/{user}/roles', [\App\Http\Controllers\API\UserRoleControlle
 
 
 // User CRUD routes
-Route::apiResource('users', UserController::class);
+Route::middleware('auth:sanctum')->prefix('users')->group(function () {
+    // CRUD operations
+    Route::get('/', [UserController::class, 'index'])->name('users.index');
+    Route::post('/', [UserController::class, 'store'])->name('users.store');
+    Route::get('{user}', [UserController::class, 'show'])->name('users.show');
+    Route::put('{user}', [UserController::class, 'update'])->name('users.update');
+    Route::patch('{user}', [UserController::class, 'update'])->name('users.patch');
+    Route::delete('{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Additional actions
+    Route::patch('{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::post('{user}/send-reset-link', [UserController::class, 'sendPasswordResetLink'])->name('users.send-reset-link');
+    Route::patch('{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('roles', [UserController::class, 'getRoles'])->name('users.roles');
+});
+//Route::get('users',[UserController::class, 'index']);
+//Route::get('users/{user}',[UserController::class, 'show']);
+//Route::post('users',[UserController::class, 'store']);
+//Route::post('users/{user}',[UserController::class, 'update']);
+//Route::delete('users/{user}',[UserController::class, 'destroy']);
+//Route::apiResource('users', UserController::class);
 
 // Additional user management routes
 Route::put('users/{user}/activate', [UserController::class, 'activate'])
