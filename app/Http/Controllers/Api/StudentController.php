@@ -23,7 +23,7 @@ class StudentController extends Controller
         }else{
             $students = Student::query()->filter($filter)->get();
         }
-        return apiResponse('api.fetched', [StudentResource::collection($students)]);
+        return StudentResource::collection($students);
     }
 
 
@@ -34,8 +34,8 @@ class StudentController extends Controller
     public function store(StudentRequest $request)
     {
         $validated = $request->validated();
-        Student::query()->create($validated);
-        return apiResponse('api.success');
+        $student = Student::query()->create($validated);
+        return new StudentResource($student);
 
     }
 
@@ -44,7 +44,7 @@ class StudentController extends Controller
      */
     public function show(Student $student)
     {
-        return apiResponse('api.success', [new StudentResource($student)]);
+        return new StudentResource($student);
 
     }
 
@@ -62,7 +62,7 @@ class StudentController extends Controller
     public function update(StudentRequest $request, Student $student)
     {
         $student->update($request->validated());
-        return apiResponse('api.success');
+        return new StudentResource($student);
     }
 
     /**
@@ -71,7 +71,7 @@ class StudentController extends Controller
     public function destroy(Student $student)
     {
         $student->delete();
-        return apiResponse('api.success');
+        return new StudentResource($student);
     }
 
     public function bulkMove(Request $request)
