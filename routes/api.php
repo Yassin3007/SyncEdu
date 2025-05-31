@@ -56,6 +56,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // general routes
 Route::get('/stages', [HomeController::class, 'getStages']);
 Route::get('/grades/{id}', [HomeController::class, 'getGrades']);
+Route::get('/divisions/{id}', [HomeController::class, 'getDivisions']);
 Route::get('/districts', [DistrictController::class, 'index']);
 Route::get('/districts/city/{city}', [DistrictController::class, 'getByCity']);
 
