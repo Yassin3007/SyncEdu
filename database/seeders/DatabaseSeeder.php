@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
             StagesSeeder::class,  // Make sure StagesSeeder runs first
             GradesSeeder::class,
             DivisionsSeeder::class,
-            DivisionsSeeder::class,
+            CairoDistrictsSeeder::class,
             // Other seeders...
         ]);
         User::factory()->create([
