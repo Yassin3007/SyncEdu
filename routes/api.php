@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DistrictController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\PermissionController;
@@ -55,6 +56,9 @@ Route::post('/login', [AuthController::class, 'login']);
 // general routes
 Route::get('/stages', [HomeController::class, 'getStages']);
 Route::get('/grades/{id}', [HomeController::class, 'getGrades']);
+Route::get('/districts', [DistrictController::class, 'index']);
+Route::get('/districts/city/{city}', [DistrictController::class, 'getByCity']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

@@ -22,8 +22,10 @@ return new class extends Migration
             $table->string('school')->nullable();
             $table->foreignId('stage_id')->nullable()->constrained();
             $table->foreignId('grade_id')->nullable()->constrained();
+            $table->foreignId('district_id')->nullable()->constrained();
             $table->string('subscription_type')->nullable();
             $table->decimal('wallet_balance')->default(0);
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }
