@@ -20,33 +20,37 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/login', [AuthController::class, 'login']);
 
-//student routes
-Route::get('/students', [StudentController::class, 'index']);
-Route::get('/students/{student}', [StudentController::class, 'show']);
-Route::post('/students', [StudentController::class, 'store']);
-Route::post('/students/{student}', [StudentController::class, 'update']);
-Route::delete('/students/{student}', [StudentController::class, 'destroy']);
-Route::post('/students/bulk/move', [StudentController::class, 'bulkMove']);
+
+Route::group(['middleware' => 'auth:sanctum'], function () {
+    //student routes
+    Route::get('/students', [StudentController::class, 'index']);
+    Route::get('/students/{student}', [StudentController::class, 'show']);
+    Route::post('/students', [StudentController::class, 'store']);
+    Route::post('/students/{student}', [StudentController::class, 'update']);
+    Route::delete('/students/{student}', [StudentController::class, 'destroy']);
+    Route::post('/students/bulk/move', [StudentController::class, 'bulkMove']);
 
 //teacher routes
-Route::get('/teachers', [TeacherController::class, 'index']);
-Route::post('/teachers', [TeacherController::class, 'store']);
-Route::post('/teachers/{teacher}', [TeacherController::class, 'update']);
-Route::get('/teachers/{teacher}', [TeacherController::class, 'show']);
-Route::delete('/teachers/{teacher}', [TeacherController::class, 'destroy']);
+    Route::get('/teachers', [TeacherController::class, 'index']);
+    Route::post('/teachers', [TeacherController::class, 'store']);
+    Route::post('/teachers/{teacher}', [TeacherController::class, 'update']);
+    Route::get('/teachers/{teacher}', [TeacherController::class, 'show']);
+    Route::delete('/teachers/{teacher}', [TeacherController::class, 'destroy']);
 
 //subject routes
-Route::get('/subjects', [SubjectController::class, 'index']);
-Route::post('/subjects', [SubjectController::class, 'store']);
-Route::post('/subjects/{subject}', [SubjectController::class, 'update']);
-Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy']);
+    Route::get('/subjects', [SubjectController::class, 'index']);
+    Route::post('/subjects', [SubjectController::class, 'store']);
+    Route::post('/subjects/{subject}', [SubjectController::class, 'update']);
+    Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy']);
 
 //lesson routes
-Route::get('/lessons', [LessonController::class, 'index']);
-Route::get('/lessons/{lesson}', [LessonController::class, 'show']);
-Route::post('/lessons', [LessonController::class, 'store']);
-Route::post('/lessons/{lesson}', [LessonController::class, 'update']);
-Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
+    Route::get('/lessons', [LessonController::class, 'index']);
+    Route::get('/lessons/{lesson}', [LessonController::class, 'show']);
+    Route::post('/lessons', [LessonController::class, 'store']);
+    Route::post('/lessons/{lesson}', [LessonController::class, 'update']);
+    Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
+
+});
 
 // general routes
 Route::get('/stages', [HomeController::class, 'getStages']);
