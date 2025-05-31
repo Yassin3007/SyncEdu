@@ -33,6 +33,7 @@ class StudentRequest extends FormRequest
             'school' => 'required|string|max:255',
             'stage_id' => 'required|exists:stages,id',
             'grade_id' => 'required|exists:grades,id',
+            'district_id' => 'required|exists:districts,id',
             'subscription_type' => 'required|string|max:255',
         ];
     }
