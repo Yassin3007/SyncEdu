@@ -72,6 +72,7 @@ class StudentController extends Controller
     {
         $student->delete();
         return new StudentResource($student);
+
     }
 
     public function bulkMove(Request $request)
