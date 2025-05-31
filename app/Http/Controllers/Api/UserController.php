@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Http\Resources\RoleResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class UserController extends Controller
     /**
      * Display a listing of the users.
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
         $query = User::with('roles');
 
@@ -48,22 +49,14 @@ class UserController extends Controller
         $perPage = $request->get('per_page', 15);
         $users = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        return response()->json([
-            'success' => true,
-            'data' => UserResource::collection($users),
-            'meta' => [
-                'current_page' => $users->currentPage(),
-                'last_page' => $users->lastPage(),
-                'per_page' => $users->perPage(),
-                'total' => $users->total(),
-            ]
-        ]);
+        return UserResource::collection($users);
+
     }
 
     /**
      * Store a newly created user in storage.
      */
-    public function store(StoreUserRequest $request): JsonResponse
+    public function store(StoreUserRequest $request)
     {
         try {
             $validated = $request->validated();
@@ -88,11 +81,7 @@ class UserController extends Controller
 
             $user->load('roles');
 
-            return response()->json([
-                'success' => true,
-                'message' => 'User created successfully.',
-                'data' => new UserResource($user)
-            ], 201);
+            return new UserResource($user);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -106,20 +95,17 @@ class UserController extends Controller
     /**
      * Display the specified user.
      */
-    public function show(User $user): JsonResponse
+    public function show(User $user)
     {
         $user->load('roles', 'permissions');
 
-        return response()->json([
-            'success' => true,
-            'data' => new UserResource($user)
-        ]);
+        return new UserResource($user);
     }
 
     /**
      * Update the specified user in storage.
      */
-    public function update(UpdateUserRequest $request, User $user): JsonResponse
+    public function update(UpdateUserRequest $request, User $user)
     {
         try {
             $validated = $request->validated();
@@ -150,11 +136,7 @@ class UserController extends Controller
 
             $user->load('roles');
 
-            return response()->json([
-                'success' => true,
-                'message' => 'User updated successfully.',
-                'data' => new UserResource($user)
-            ]);
+            return new UserResource($user);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -255,18 +237,14 @@ class UserController extends Controller
     /**
      * Toggle user active status.
      */
-    public function toggleStatus(User $user): JsonResponse
+    public function toggleStatus(User $user)
     {
         try {
             $user->update(['active' => !$user->active]);
 
             $status = $user->active ? 'activated' : 'deactivated';
 
-            return response()->json([
-                'success' => true,
-                'message' => "User {$status} successfully.",
-                'data' => new UserResource($user)
-            ]);
+            return new UserResource($user);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -280,13 +258,10 @@ class UserController extends Controller
     /**
      * Get all roles for user assignment.
      */
-    public function getRoles(): JsonResponse
+    public function getRoles()
     {
         $roles = Role::select('id', 'name')->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $roles
-        ]);
+        return new RoleResource($roles);
     }
 }
