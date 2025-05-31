@@ -21,7 +21,7 @@ Route::get('/user', function (Request $request) {
 Route::post('/login', [AuthController::class, 'login']);
 
 
-Route::group(['middleware' => 'auth:sanctum'], function () {
+//Route::group(['middleware' => 'auth:sanctum'], function () {
     //student routes
     Route::get('/students', [StudentController::class, 'index']);
     Route::get('/students/{student}', [StudentController::class, 'show']);
@@ -50,7 +50,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/lessons/{lesson}', [LessonController::class, 'update']);
     Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
 
-});
+//});
 
 // general routes
 Route::get('/stages', [HomeController::class, 'getStages']);
