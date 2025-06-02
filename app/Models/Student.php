@@ -3,7 +3,14 @@
 namespace App\Models;
 
 use App\Filters\Filters;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Student extends Model
 {
@@ -20,6 +27,15 @@ class Student extends Model
         'subscription_type',
         'wallet_balance'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($student) {
+            $student->generateQrCode();
+        });
+    }
 
     protected $appends = ['name'] ;
 
@@ -39,5 +55,53 @@ class Student extends Model
 
     public function grade(){
         return $this->belongsTo(Grade::class);
+    }
+
+    /**
+     * Generate QR code using endroid/qr-code (no deprecation warnings)
+     */
+    public function generateQrCode()
+    {
+        // Generate unique string for QR code
+        $qrString = 'STUDENT_' . Str::upper(Str::random(10)) . '_' . time();
+
+        // Set the QR code string
+        $this->qrcode = $qrString;
+
+        // Generate QR code using endroid/qr-code (no deprecation warnings)
+        $result = Builder::create()
+            ->writer(new PngWriter())
+            ->writerOptions([])
+            ->data($qrString)
+            ->encoding(new Encoding('UTF-8'))
+            ->errorCorrectionLevel(ErrorCorrectionLevel::Low)
+            ->size(300)
+            ->margin(10)
+            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
+            ->build();
+
+        // Create filename
+        $filename = 'qrcodes/student_' . Str::random(20) . '.png';
+
+        // Store the QR code image
+        Storage::disk('public')->put($filename, $result->getString());
+
+        // Set the image path
+        $this->qrcode_image = $filename;
+    }
+
+    public function getQrCodeUrlAttribute()
+    {
+        return $this->qrcode_image ? Storage::url($this->qrcode_image) : null;
+    }
+
+    public function regenerateQrCode()
+    {
+        if ($this->qrcode_image && Storage::disk('public')->exists($this->qrcode_image)) {
+            Storage::disk('public')->delete($this->qrcode_image);
+        }
+
+        $this->generateQrCode();
+        $this->save();
     }
 }

@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('subscription_type')->nullable();
             $table->decimal('wallet_balance')->default(0);
             $table->string('status')->default('active');
+            $table->string('qrcode_image')->nullable();
+            $table->string('qrcode')->nullable();
             $table->timestamps();
         });
     }

@@ -26,6 +26,7 @@ class StudentResource extends JsonResource
             'grade' => $this->grade,
             'subscription_type' => $this->subscription_type,
             'wallet' => $this->wallet,
+            'qrcode_image' => $this->qr_code_url,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
