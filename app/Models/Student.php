@@ -92,7 +92,12 @@ class Student extends Model
 
     public function getQrCodeUrlAttribute()
     {
-        return $this->qrcode_image ? Storage::url($this->qrcode_image) : null;
+        if (!$this->qrcode_image) {
+            return null;
+        }
+
+        // Return full URL path
+        return url(Storage::url($this->qrcode_image));
     }
 
     public function regenerateQrCode()
