@@ -23,6 +23,8 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->boolean('active')->default(true);
             $table->integer('salary')->nullable();
+            $table->integer('qrcode_image')->nullable();
+            $table->integer('qrcode')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

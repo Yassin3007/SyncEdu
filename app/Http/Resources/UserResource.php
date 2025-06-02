@@ -49,6 +49,7 @@ class UserResource extends JsonResource
             }),
             'is_currently_employed' => $this->isCurrentlyEmployed(),
             'full_info' => $this->getFullInfoAttribute(),
+            'qrcode_image' => $this->qr_code_url
         ];
     }
 }
