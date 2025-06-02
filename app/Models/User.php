@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -9,7 +14,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -33,14 +37,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'salary',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($user) {
-            $user->generateQrCode();
-        });
-    }
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -65,6 +61,15 @@ class User extends Authenticatable implements MustVerifyEmail
             'end_date' => 'date',
             'active' => 'boolean',
         ];
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            $user->generateQrCode();
+        });
     }
 
     /**
@@ -113,44 +118,46 @@ class User extends Authenticatable implements MustVerifyEmail
         return true;
     }
 
+    /**
+     * Generate QR code using endroid/qr-code (no deprecation warnings)
+     */
     public function generateQrCode()
     {
-        // Generate unique string for QR code (you can customize this)
+        // Generate unique string for QR code
         $qrString = 'USER_' . Str::upper(Str::random(10)) . '_' . time();
 
         // Set the QR code string
         $this->qrcode = $qrString;
 
-        // Generate QR code image
-        $qrCodeImage = QrCode::format('png')
+        // Generate QR code using endroid/qr-code (no deprecation warnings)
+        $result = Builder::create()
+            ->writer(new PngWriter())
+            ->writerOptions([])
+            ->data($qrString)
+            ->encoding(new Encoding('UTF-8'))
+            ->errorCorrectionLevel(ErrorCorrectionLevel::Low)
             ->size(300)
-            ->margin(2)
-            ->generate($qrString);
+            ->margin(10)
+            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
+            ->build();
 
         // Create filename
         $filename = 'qrcodes/user_' . Str::random(20) . '.png';
 
         // Store the QR code image
-        Storage::disk('public')->put($filename, $qrCodeImage);
+        Storage::disk('public')->put($filename, $result->getString());
 
         // Set the image path
         $this->qrcode_image = $filename;
     }
 
-    /**
-     * Get the full URL of the QR code image
-     */
     public function getQrCodeUrlAttribute()
     {
         return $this->qrcode_image ? Storage::url($this->qrcode_image) : null;
     }
 
-    /**
-     * Regenerate QR code (if needed)
-     */
     public function regenerateQrCode()
     {
-        // Delete old QR code image if exists
         if ($this->qrcode_image && Storage::disk('public')->exists($this->qrcode_image)) {
             Storage::disk('public')->delete($this->qrcode_image);
         }
