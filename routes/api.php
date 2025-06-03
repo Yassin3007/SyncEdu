@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DistrictController;
 use App\Http\Controllers\Api\HomeController;
@@ -50,6 +51,11 @@ Route::post('/login', [AuthController::class, 'login']);
     Route::post('/lessons', [LessonController::class, 'store']);
     Route::post('/lessons/{lesson}', [LessonController::class, 'update']);
     Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
+
+// attendance routes
+    Route::post('/attendance', [AttendanceController::class, 'store']);
+    Route::post('/change-attendance-status', [AttendanceController::class, 'changeAttendanceStatus']);
+    Route::delete('/attendance/{attendance}', [AttendanceController::class, 'destroy']);
 
 //});
 

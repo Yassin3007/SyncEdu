@@ -71,8 +71,10 @@ class StudentController extends Controller
     public function destroy(Student $student)
     {
         $student->delete();
-        return new StudentResource($student);
-
+        return response()->json([
+            'success' => true,
+            'message' => 'api.success'
+        ]);
     }
 
     public function bulkMove(Request $request)
@@ -89,7 +91,9 @@ class StudentController extends Controller
                 'grade_id' => $request->grade_id,
             ]);
         });
-        return apiResponse('api.success');
-
+        return response()->json([
+            'success' => true,
+            'message' => 'api.success'
+        ]);
     }
 }

@@ -86,6 +86,9 @@ class TeacherController extends Controller
     public function destroy(Teacher $teacher)
     {
         $teacher->delete();
-        return apiResponse('api.success');
+        return response()->json([
+            'success' => true,
+            'message' => 'api.success'
+        ]);
     }
 }
