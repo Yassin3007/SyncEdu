@@ -36,6 +36,7 @@ class TeacherRequest extends FormRequest
             'grades.*' => 'exists:grades,id',
             'stages' => 'required|array',
             'stages.*' => 'exists:stages,id',
+            'lessons_count' => 'required|integer|min:1',
         ];
     }
 }

@@ -45,7 +45,7 @@ class TeacherController extends Controller
         $teacher->grades()->attach($validated['grades']);
         $teacher->stages()->attach($validated['stages']);
 
-        return apiResponse('api.success');
+        return new TeacherResource($teacher);
 
     }
 

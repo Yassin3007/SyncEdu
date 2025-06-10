@@ -31,7 +31,7 @@ class Attendance extends Model
     }
 
     public function lesson(){
-        return $this->belongsTo(Lesson::class ,'lesson_id','id');
+        return $this->belongsTo(Table::class ,'lesson_id','id');
     }
 
 

@@ -14,6 +14,7 @@ class Teacher extends Model
         'phone',
         'division',
         'school',
+        'lessons_count'
     ];
     protected $appends = ['name'] ;
 
@@ -38,6 +39,11 @@ class Teacher extends Model
     public function stages()
     {
         return $this->belongsToMany(Stage::class);
+    }
+
+    public function tables()
+    {
+        return $this->hasMany(Table::class);
     }
 
 }

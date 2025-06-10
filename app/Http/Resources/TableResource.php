@@ -6,7 +6,7 @@ use App\Models\Table;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class LessonResource extends JsonResource
+class TableResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -22,10 +22,9 @@ class LessonResource extends JsonResource
             'subject'          => $this->subject->name,
             'start'            => $this->start ,
             'end'              => $this->end ,
-            'day'              => Table::DAYS[$this->day] ,
+            'day'              => $this->day ,
             'stage'            => $this ->stage ,
             'grade'            => $this ->grade ,
             'division'         => $this ->division
-        ];
-    }
+        ];    }
 }

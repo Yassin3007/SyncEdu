@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('division')->nullable();
             $table->string('school')->nullable();
             $table->decimal('wallet_balance')->default(0);
+            $table->integer('lessons_count')->default(0);
             $table->timestamps();
         });
     }

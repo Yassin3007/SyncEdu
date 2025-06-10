@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DistrictController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\LessonController;
+use App\Http\Controllers\Api\TableController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\StudentController;
@@ -38,6 +39,7 @@ Route::post('/login', [AuthController::class, 'login']);
     Route::post('/teachers/{teacher}', [TeacherController::class, 'update']);
     Route::get('/teachers/{teacher}', [TeacherController::class, 'show']);
     Route::delete('/teachers/{teacher}', [TeacherController::class, 'destroy']);
+    Route::get('/generate-lessons/{teacher}', [LessonController::class, 'createLessonsForTeacher']);
 
 //subject routes
     Route::get('/subjects', [SubjectController::class, 'index']);
@@ -46,11 +48,11 @@ Route::post('/login', [AuthController::class, 'login']);
     Route::delete('/subjects/{subject}', [SubjectController::class, 'destroy']);
 
 //lesson routes
-    Route::get('/lessons', [LessonController::class, 'index']);
-    Route::get('/lessons/{lesson}', [LessonController::class, 'show']);
-    Route::post('/lessons', [LessonController::class, 'store']);
-    Route::post('/lessons/{lesson}', [LessonController::class, 'update']);
-    Route::delete('/lessons/{lesson}', [LessonController::class, 'destroy']);
+    Route::get('/tables', [TableController::class, 'index']);
+    Route::get('/tables/{table}', [TableController::class, 'show']);
+    Route::post('/tables', [TableController::class, 'store']);
+    Route::post('/tables/{table}', [TableController::class, 'update']);
+    Route::delete('/tables/{table}', [TableController::class, 'destroy']);
 
 // attendance routes
     Route::post('/attendance', [AttendanceController::class, 'store']);
