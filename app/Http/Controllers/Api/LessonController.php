@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Filters\LessonFilter;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LessonRequest;
+use App\Http\Resources\LessonResource;
 use App\Models\Lesson;
 use App\Models\Teacher;
 use Carbon\Carbon;
@@ -14,25 +17,34 @@ class LessonController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        if(!$request->day_from && !$request->day_to){
+            $request['day_from'] = Carbon::now()->startOfWeek(Carbon::SATURDAY);
+            $request['day_to'] = Carbon::now()->endOfWeek(Carbon::FRIDAY);
+        }
+        $filter = new LessonFilter($request);
+        $lessons = Lesson::with(['teacher', 'subject', 'stage', 'grade', 'division'])->filter($filter);
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        if(Request()->boolean('paginate')){
+            $perPage = Request()->input('per_page', 15);
+            $lessons = $lessons->paginate($perPage);
+        }else{
+            $lessons = $lessons->get();
+        }
+
+        return LessonResource::collection($lessons);
+
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(LessonRequest $request)
     {
-        //
+        $lesson = Lesson::create($request->validated());
+        $lesson->load(['teacher', 'subject', 'stage', 'grade', 'division']);
+        return new LessonResource($lesson);
     }
 
     /**
@@ -40,23 +52,22 @@ class LessonController extends Controller
      */
     public function show(Lesson $lesson)
     {
-        //
-    }
+        $lesson->load(['teacher', 'subject', 'stage', 'grade', 'division']);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Lesson $lesson)
-    {
-        //
+        return new LessonResource($lesson);
+
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Lesson $lesson)
+    public function update(LessonRequest $request, Lesson $lesson)
     {
-        //
+        $lesson->update($request->validated());
+        $lesson->load(['teacher', 'subject', 'stage', 'grade', 'division']);
+
+        return new LessonResource($lesson);
+
     }
 
     /**
@@ -64,9 +75,58 @@ class LessonController extends Controller
      */
     public function destroy(Lesson $lesson)
     {
-        //
+        $lesson->delete();
+        return apiResponse('api.success');
+
     }
 
+    /**
+     * Get lessons by teacher for a specific date
+     */
+    public function getByTeacherAndDate(Request $request): JsonResponse
+    {
+        $request->validate([
+            'teacher_id' => 'required|exists:teachers,id',
+            'date' => 'required|date'
+        ]);
+
+        $lessons = Lesson::with(['subject', 'stage', 'grade', 'division'])
+            ->where('teacher_id', $request->teacher_id)
+            ->where('day', $request->date)
+            ->orderBy('start')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => LessonResource::collection($lessons)
+        ]);
+    }
+
+    /**
+     * Get lessons schedule for a specific week
+     */
+    public function getWeeklySchedule(Request $request): JsonResponse
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'teacher_id' => 'sometimes|exists:teachers,id'
+        ]);
+
+        $query = Lesson::with(['teacher', 'subject', 'stage', 'grade', 'division'])
+            ->whereBetween('day', [$request->start_date, $request->end_date]);
+
+        if ($request->has('teacher_id')) {
+            $query->where('teacher_id', $request->teacher_id);
+        }
+
+        $lessons = $query->orderBy('day')->orderBy('start')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => LessonResource::collection($lessons)
+        ]);
+    }
     function createLessonsForTeacher($teacherId)
     {
         // Get teacher with their schedule and lessons_count
@@ -96,7 +156,7 @@ class LessonController extends Controller
         ];
 
         // Start from next Monday
-        $startDate = Carbon::now()->next(Carbon::MONDAY);
+        $startDate = Carbon::now();
 
         // Generate available dates based on teacher's schedule
         $availableDates = [];
@@ -177,7 +237,7 @@ class LessonController extends Controller
             $dateIndex++;
         }
 
-        return $lessonsCreated;
+        return apiResponse('api.success');
     }
 
 }

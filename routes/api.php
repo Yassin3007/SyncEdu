@@ -54,6 +54,20 @@ Route::post('/login', [AuthController::class, 'login']);
     Route::post('/tables/{table}', [TableController::class, 'update']);
     Route::delete('/tables/{table}', [TableController::class, 'destroy']);
 
+Route::prefix('lessons')->group(function () {
+    // Standard CRUD routes
+    Route::get('/', [LessonController::class, 'index']);
+    Route::post('/', [LessonController::class, 'store']);
+    Route::get('/{lesson}', [LessonController::class, 'show']);
+    Route::post('/{lesson}', [LessonController::class, 'update']);
+    Route::delete('/{lesson}', [LessonController::class, 'destroy']);
+
+    // Additional custom routes
+    Route::get('/teacher-schedule/date', [LessonController::class, 'getByTeacherAndDate']); // GET /api/lessons/teacher-schedule/date
+    Route::get('/schedule/weekly', [LessonController::class, 'getWeeklySchedule']); // GET /api/lessons/schedule/weekly
+});
+
+
 // attendance routes
     Route::post('/attendance', [AttendanceController::class, 'store']);
     Route::post('/change-attendance-status', [AttendanceController::class, 'changeAttendanceStatus']);

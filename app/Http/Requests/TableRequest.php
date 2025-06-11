@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LessonRequest extends FormRequest
+class TableRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,7 +26,7 @@ class LessonRequest extends FormRequest
             'subject_id'  => 'required|exists:subjects,id',
             'stage_id'    => 'required|exists:stages,id',
             'grade_id'    => 'required|exists:grades,id',
-            'division_id' => 'nullable|exists:divisions,id',
+            'division_id' => 'required|exists:divisions,id',
             'day'         => 'required',
             'start'       => 'required',
             'end'         => 'required',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Filters\LessonFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LessonRequest;
+use App\Http\Requests\TableRequest;
 use App\Http\Resources\TableResource;
 use App\Models\Table;
 use Illuminate\Http\Request;
@@ -30,7 +31,7 @@ class TableController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(LessonRequest $request)
+    public function store(TableRequest $request)
     {
         $validated = $request->validated();
         $validated['day'] = Table::DAYS[$request->day];
@@ -51,7 +52,7 @@ class TableController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(LessonRequest $request, Table $table)
+    public function update(TableRequest $request, Table $table)
     {
         $validated = $request->validated();
         $table->update($validated);

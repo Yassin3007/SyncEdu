@@ -26,5 +26,6 @@ class TableResource extends JsonResource
             'stage'            => $this ->stage ,
             'grade'            => $this ->grade ,
             'division'         => $this ->division
-        ];    }
+        ];
+    }
 }
