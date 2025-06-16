@@ -183,6 +183,7 @@ Route::delete('users/{user}/force', [UserController::class, 'forceDestroy'])
 
 Route::prefix('student')->group(function () {
     // Public routes (no authentication required)
+    Route::post('/register', [StudentAuthController::class, 'register']);
     Route::post('/login', [StudentAuthController::class, 'login']);
     Route::post('/request-password-reset', [StudentAuthController::class, 'requestPasswordReset']);
     Route::post('/verify-code', [StudentAuthController::class, 'verifyCodeAndLogin']);

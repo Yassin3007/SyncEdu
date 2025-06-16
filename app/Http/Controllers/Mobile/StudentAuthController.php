@@ -15,6 +15,58 @@ class StudentAuthController extends Controller
     /**
      * Login student by phone/password or national_id/password
      */
+
+    public function register(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name_en' => 'required|string|max:255',
+            'name_ar' => 'required|string|max:255',
+            'phone' => 'nullable|string|unique:students,phone',
+            'division_id' => 'nullable|string',
+            'school' => 'nullable|string|max:255',
+            'stage_id' => 'nullable|exists:stages,id',
+            'grade_id' => 'nullable|exists:grades,id',
+            'district_id' => 'nullable|exists:districts,id',
+            'password' => 'required|string|min:8|confirmed',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB max
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        do{
+            $random_id = rand(1000000000,9999999999);
+        }while(Student::where('national_id',$random_id)->exists());
+
+        // Create the student
+        $student = Student::create([
+            'name_en' => $request->name_en,
+            'name_ar' => $request->name_ar,
+            'national_id' => $random_id,
+            'phone' => $request->phone,
+            'division_id' => $request->division_id,
+            'school' => $request->school,
+            'stage_id' => $request->stage_id,
+            'grade_id' => $request->grade_id,
+            'district_id' => $request->district_id,
+            'password' => Hash::make($request->password),
+            'image' => $request->file('image'),
+        ]);
+
+        // Create token for auto-login
+        $token = $student->createToken('StudentToken')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Student registered and logged in successfully',
+            'student' => new StudentResource($student),
+            'token' => $token
+        ], 201);
+    }
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [

@@ -159,4 +159,39 @@ class Student extends Authenticatable
         $this->generateQrCode();
         $this->save();
     }
+
+    public function setImageAttribute($value)
+    {
+        if ($value && is_object($value) && method_exists($value, 'store')) {
+            // If it's an uploaded file, store it
+            $this->attributes['image'] = $value->store('students', 'public');
+        } elseif (is_string($value)) {
+            // If it's already a string path, use it directly
+            $this->attributes['image'] = $value;
+        } else {
+            // If null or empty, set to null
+            $this->attributes['image'] = null;
+        }
+    }
+
+    /**
+     * Get the image attribute - returns full URL
+     */
+    public function getImageAttribute($value)
+    {
+        if ($value) {
+            return Storage::disk('public')->url($value);
+        }
+
+        return null;
+    }
+
+    public function deleteOldImage($oldImagePath = null)
+    {
+        $pathToDelete = $oldImagePath ?: $this->attributes['image'];
+
+        if ($pathToDelete && Storage::disk('public')->exists($pathToDelete)) {
+            Storage::disk('public')->delete($pathToDelete);
+        }
+    }
 }
