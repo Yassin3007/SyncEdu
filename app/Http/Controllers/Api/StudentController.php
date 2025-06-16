@@ -34,6 +34,11 @@ class StudentController extends Controller
     public function store(StudentRequest $request)
     {
         $validated = $request->validated();
+//        $id = null ;
+        do{
+            $validated['national_id'] = rand(1000000000,9999999999);
+            $validated['password'] = $validated['national_id'];
+        }while(Student::where('national_id',$validated['national_id'])->exists());
         $student = Student::query()->create($validated);
         return new StudentResource($student);
 

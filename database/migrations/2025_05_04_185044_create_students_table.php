@@ -27,7 +27,12 @@ return new class extends Migration
             $table->decimal('wallet_balance')->default(0);
             $table->string('status')->default('active');
             $table->string('qrcode_image')->nullable();
+            $table->date('verified_at')->nullable();
+            $table->string('verification_code')->nullable();
+            $table->string('password')->nullable();
+            $table->integer('points')->default(0);
             $table->string('qrcode')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

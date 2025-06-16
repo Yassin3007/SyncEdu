@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserRoleController;
+use App\Http\Controllers\Mobile\StudentAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -162,3 +163,34 @@ Route::put('users/{user}/activate', [UserController::class, 'activate'])
 Route::delete('users/{user}/force', [UserController::class, 'forceDestroy'])
     ->name('users.force-destroy')
     ->middleware('permission:force-delete-users');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // students routes
+
+Route::prefix('student')->group(function () {
+    // Public routes (no authentication required)
+    Route::post('/login', [StudentAuthController::class, 'login']);
+    Route::post('/request-password-reset', [StudentAuthController::class, 'requestPasswordReset']);
+    Route::post('/verify-code', [StudentAuthController::class, 'verifyCodeAndLogin']);
+
+    // Protected routes (authentication required using Sanctum)
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/change-password', [StudentAuthController::class, 'changePassword']);
+        Route::post('/reset-password', [StudentAuthController::class, 'resetPassword']);
+        Route::post('/logout', [StudentAuthController::class, 'logout']);
+    });
+});

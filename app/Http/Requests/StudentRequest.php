@@ -26,7 +26,7 @@ class StudentRequest extends FormRequest
         return [
             'name_en' => 'required|string|max:255',
             'name_ar' => 'required|string|max:255',
-            'national_id' => 'nullable|string|max:255',
+//            'national_id' => 'nullable|string|max:255',
             'guardian_number' => 'nullable|string|max:255',
             'phone' => 'required|string|max:255',
             'division_id' => 'required|exists:divisions,id',

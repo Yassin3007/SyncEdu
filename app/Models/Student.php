@@ -11,9 +11,12 @@ use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Student extends Model
+class Student extends Authenticatable
 {
+    use  HasApiTokens ;
     protected $fillable = [
         'name_en',
         'name_ar',
@@ -25,8 +28,22 @@ class Student extends Model
         'stage_id',
         'grade_id',
         'subscription_type',
-        'wallet_balance'
+        'wallet_balance',
+        'password',
+        'image',
+        'verified_at',
+        'verification_code',
+        'status',
+        'points'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     protected static function boot()
     {
@@ -35,6 +52,39 @@ class Student extends Model
         static::creating(function ($student) {
             $student->generateQrCode();
         });
+    }
+
+    public function generateVerificationCode()
+    {
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $this->update([
+            'verification_code' => $code,
+//            'verification_code_expires_at' => now()->addMinutes(15), // Code expires in 15 minutes
+        ]);
+
+        return $code;
+    }
+
+    /**
+     * Verify the provided code
+     */
+    public function verifyCode($code)
+    {
+        return $this->verification_code === $code ;
+//            $this->verification_code_expires_at &&
+//            $this->verification_code_expires_at->isFuture();
+    }
+
+    /**
+     * Clear verification code after use
+     */
+    public function clearVerificationCode()
+    {
+        $this->update([
+            'verification_code' => null,
+//            'verification_code_expires_at' => null,
+        ]);
     }
 
     protected $appends = ['name'] ;
