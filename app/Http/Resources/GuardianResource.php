@@ -14,6 +14,13 @@ class GuardianResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id ,
+            'name'     => $this->name ,
+            'phone'    => $this->phone ,
+            'national_id'    =>$this->national_id,
+            'image'    =>$this->image ,
+
+        ];
     }
 }

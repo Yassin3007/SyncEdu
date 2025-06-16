@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\SubjectController;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserRoleController;
+use App\Http\Controllers\Mobile\GuardianAuthController;
 use App\Http\Controllers\Mobile\StudentAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -181,6 +182,7 @@ Route::delete('users/{user}/force', [UserController::class, 'forceDestroy'])
 
     // students routes
 
+
 Route::prefix('student')->group(function () {
     // Public routes (no authentication required)
     Route::post('/register', [StudentAuthController::class, 'register']);
@@ -189,9 +191,29 @@ Route::prefix('student')->group(function () {
     Route::post('/verify-code', [StudentAuthController::class, 'verifyCodeAndLogin']);
 
     // Protected routes (authentication required using Sanctum)
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:student')->group(function () {
         Route::post('/change-password', [StudentAuthController::class, 'changePassword']);
         Route::post('/reset-password', [StudentAuthController::class, 'resetPassword']);
         Route::post('/logout', [StudentAuthController::class, 'logout']);
+    });
+});
+
+
+
+
+// guardians routes
+
+Route::prefix('guardian')->group(function () {
+    // Public routes (no authentication required)
+    Route::post('/register', [GuardianAuthController::class, 'register']);
+    Route::post('/login', [GuardianAuthController::class, 'login']);
+    Route::post('/request-password-reset', [GuardianAuthController::class, 'requestPasswordReset']);
+    Route::post('/verify-code', [GuardianAuthController::class, 'verifyCodeAndLogin']);
+
+    // Protected routes (authentication required using Sanctum)
+    Route::middleware('auth:guardian')->group(function () {
+        Route::post('/change-password', [GuardianAuthController::class, 'changePassword']);
+        Route::post('/reset-password', [GuardianAuthController::class, 'resetPassword']);
+        Route::post('/logout', [GuardianAuthController::class, 'logout']);
     });
 });

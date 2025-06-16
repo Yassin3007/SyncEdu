@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('phone')->nullable();
+            $table->string('national_id')->nullable();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
             $table->string('password');
             $table->string('image')->nullable();
+            $table->date('verified_at')->nullable();
+            $table->string('verification_code')->nullable();
             $table->timestamps();
         });
     }

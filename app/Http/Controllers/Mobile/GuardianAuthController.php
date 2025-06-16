@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\Mobile;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\GuardianResource;
 use App\Http\Resources\StudentResource;
+use App\Models\Guardian;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
-class StudentAuthController extends Controller
+class GuardianAuthController extends Controller
 {
     /**
      * Login student by phone/password or national_id/password
@@ -19,14 +21,9 @@ class StudentAuthController extends Controller
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name_en' => 'required|string|max:255',
-            'name_ar' => 'required|string|max:255',
-            'phone' => 'nullable|string|unique:students,phone',
-            'division_id' => 'nullable|string',
-            'school' => 'nullable|string|max:255',
-            'stage_id' => 'nullable|exists:stages,id',
-            'grade_id' => 'nullable|exists:grades,id',
-            'district_id' => 'nullable|exists:districts,id',
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|unique:guardians,phone',
+            'student_id' => 'required|exists:students,national_id',
             'password' => 'required|string|min:8|confirmed',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // 2MB max
         ]);
@@ -40,31 +37,25 @@ class StudentAuthController extends Controller
         }
         do{
             $random_id = rand(1000000000,9999999999);
-        }while(Student::where('national_id',$random_id)->exists());
+        }while(Guardian::where('national_id',$random_id)->exists());
 
         // Create the student
-        $student = Student::create([
-            'name_en' => $request->name_en,
-            'name_ar' => $request->name_ar,
-            'national_id' => $random_id,
+        $guardian = Guardian::create([
+            'name' => $request->name,
             'phone' => $request->phone,
-            'division_id' => $request->division_id,
-            'school' => $request->school,
-            'stage_id' => $request->stage_id,
-            'grade_id' => $request->grade_id,
-            'district_id' => $request->district_id,
+            'national_id' => $random_id,
+            'student_id' => Student::where('national_id',$request->student_id)->first()->id ,
             'password' => Hash::make($request->password),
             'image' => $request->file('image'),
-            'status'  => 0
         ]);
 
         // Create token for auto-login
-        $token = $student->createToken('StudentToken')->plainTextToken;
+        $token = $guardian->createToken('GuardianToken')->plainTextToken;
 
         return response()->json([
             'success' => true,
-            'message' => 'Student registered and logged in successfully',
-            'student' => new StudentResource($student),
+            'message' => 'Guardian registered and logged in successfully',
+            'guardian' => new GuardianResource($guardian),
             'token' => $token
         ], 201);
     }
@@ -87,11 +78,11 @@ class StudentAuthController extends Controller
         $password = $request->password;
 
         // Try to find student by phone or national_id
-        $student = Student::where('phone', $identifier)
+        $guardian = Guardian::where('phone', $identifier)
             ->orWhere('national_id', $identifier)
             ->first();
 
-        if (!$student || !Hash::check($password, $student->password)) {
+        if (!$guardian || !Hash::check($password, $guardian->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid credentials'
@@ -99,12 +90,12 @@ class StudentAuthController extends Controller
         }
 
         // Create token for the student (using Sanctum)
-        $token = $student->createToken('StudentToken')->plainTextToken;
+        $token = $guardian->createToken('GuardianToken')->plainTextToken;
 
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
-            'student' => new  StudentResource($student),
+            'guardian' => new  GuardianResource($guardian),
             'token' => $token
         ]);
     }
@@ -128,19 +119,19 @@ class StudentAuthController extends Controller
         }
 
         // Find student by both national_id AND phone for security
-        $student = Student::where('national_id', $request->national_id)
+        $guardian = Guardian::where('national_id', $request->national_id)
             ->where('phone', $request->phone)
             ->first();
 
-        if (!$student) {
+        if (!$guardian) {
             return response()->json([
                 'success' => false,
-                'message' => 'No student found with these credentials'
+                'message' => 'No Guardian found with these credentials'
             ], 404);
         }
 
         // Generate verification code
-        $code = $student->generateVerificationCode();
+        $code = $guardian->generateVerificationCode();
 
         // Here you would typically send the code via SMS
         // For now, we'll return it in the response (remove this in production)
@@ -148,7 +139,7 @@ class StudentAuthController extends Controller
             'success' => true,
             'message' => 'Verification code generated successfully',
             'code' => $code, // Remove this line in production
-            'expires_at' => $student->verification_code_expires_at
+//            'expires_at' => $guardian->verification_code_expires_at
         ]);
     }
 
@@ -172,19 +163,19 @@ class StudentAuthController extends Controller
         }
 
         // Find student by both national_id AND phone
-        $student = Student::where('national_id', $request->national_id)
+        $guardian = Guardian::where('national_id', $request->national_id)
             ->where('phone', $request->phone)
             ->first();
 
-        if (!$student) {
+        if (!$guardian) {
             return response()->json([
                 'success' => false,
-                'message' => 'Student not found'
+                'message' => 'Guardian not found'
             ], 404);
         }
 
         // Verify the code
-        if (!$student->verifyCode($request->code)) {
+        if (!$guardian->verifyCode($request->code)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid or expired verification code'
@@ -192,15 +183,15 @@ class StudentAuthController extends Controller
         }
 
         // Clear the verification code
-        $student->clearVerificationCode();
+        $guardian->clearVerificationCode();
 
         // Create token for the student (using Sanctum)
-        $token = $student->createToken('StudentToken')->plainTextToken;
+        $token = $guardian->createToken('GuardianToken')->plainTextToken;
 
         return response()->json([
             'success' => true,
             'message' => 'Code verified and logged in successfully',
-            'student' => $student,
+            'guardian' => $guardian,
             'token' => $token
         ]);
     }
@@ -259,9 +250,9 @@ class StudentAuthController extends Controller
             ], 422);
         }
 
-        $student = $request->user();
+        $guardian = $request->user();
 
-        $student->update([
+        $guardian->update([
             'password' => Hash::make($request->new_password)
         ]);
 
