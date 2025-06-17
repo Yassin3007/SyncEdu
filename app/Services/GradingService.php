@@ -22,6 +22,7 @@ class GradingService
         }
     }
 
+
     private function checkExactMatch(string $correctAnswer, string $studentAnswer): bool
     {
         return strtolower(trim($correctAnswer)) === strtolower(trim($studentAnswer));
