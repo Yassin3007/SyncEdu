@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DistrictController;
+use App\Http\Controllers\Api\ExamController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\TableController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserRoleController;
 use App\Http\Controllers\Mobile\GuardianAuthController;
 use App\Http\Controllers\Mobile\StudentAuthController;
+use App\Http\Controllers\Mobile\StudentExamController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -91,6 +93,11 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
+
+// exams routes
+
+Route::apiResource('exams', ExamController::class);
+Route::patch('exams/{exam}/toggle-status', [ExamController::class, 'toggleStatus']);
 
 
 
@@ -196,6 +203,24 @@ Route::prefix('student')->group(function () {
         Route::post('/reset-password', [StudentAuthController::class, 'resetPassword']);
         Route::post('/logout', [StudentAuthController::class, 'logout']);
     });
+
+    // Get available exams for student
+    Route::get('exams', [StudentExamController::class, 'availableExams']);
+
+    // Start an exam
+    Route::post('exams/{exam}/start', [StudentExamController::class, 'startExam']);
+
+    // Submit answer for a question
+    Route::post('attempts/{attempt}/answer', [StudentExamController::class, 'submitAnswer']);
+
+    // Submit complete exam
+    Route::post('attempts/{attempt}/submit', [StudentExamController::class, 'submitExam']);
+
+    // Get exam results
+    Route::get('attempts/{attempt}/results', [StudentExamController::class, 'examResults']);
+
+    // Get my exam attempts
+    Route::get('my-attempts', [StudentExamController::class, 'myAttempts']);
 });
 
 
