@@ -26,6 +26,7 @@ class SubjectRequest extends FormRequest
             'name_ar' => 'required|string|max:255',
             'stage_id' => 'required|exists:stages,id',
             'grade_id' => 'required|exists:grades,id',
+            'division_id' => 'required|exists:divisions,id',
         ];
     }
 }

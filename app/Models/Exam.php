@@ -16,7 +16,8 @@ class Exam extends Model
         'is_active',
         'start_time',
         'end_time',
-        'created_by'
+        'created_by',
+        'subject_id',
     ];
 
     protected $casts = [
@@ -56,5 +57,10 @@ class Exam extends Model
         if ($this->end_time && $now->gt($this->end_time)) return false;
 
         return true;
+    }
+
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class,'subject_id');
     }
 }

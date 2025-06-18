@@ -27,6 +27,7 @@ class ExamRequest extends FormRequest
             'duration_minutes' => 'nullable|integer|min:1',
             'start_time' => 'nullable|date',
             'end_time' => 'nullable|date|after:start_time',
+            'subject_id' => 'required|exists:subjects,id',
             'questions' => 'required|array|min:1',
             'questions.*.type' => 'required|in:multiple_choice,written,true_false',
             'questions.*.question_text' => 'required|string',

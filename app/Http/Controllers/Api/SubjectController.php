@@ -20,8 +20,7 @@ class SubjectController extends Controller
             $subjects = Subject::query()->paginate($perPage);;
         }
         $subjects = Subject::all();
-        return apiResponse('api.fetched', [SubjectResource::collection($subjects)]);
-
+        return SubjectResource::collection($subjects);
     }
 
     /**
@@ -38,8 +37,8 @@ class SubjectController extends Controller
     public function store(SubjectRequest $request)
     {
         $validated = $request->validated();
-        Subject::query()->create($validated);
-        return apiResponse('api.success');
+        $subject = Subject::query()->create($validated);
+        return new SubjectResource($subject);
     }
 
     /**

@@ -21,6 +21,7 @@ class ExamResource extends JsonResource
             'duration_minutes' => $this->duration_minutes,
             'total_marks' => $this->total_marks,
             'is_active' => $this->is_active,
+            'subject' => $this->subject?->name,
             'start_time' => $this->start_time?->format('Y-m-d H:i:s'),
             'end_time' => $this->end_time?->format('Y-m-d H:i:s'),
             'questions_count' => $this->whenCounted('questions'),

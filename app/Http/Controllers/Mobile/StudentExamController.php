@@ -16,6 +16,7 @@ class StudentExamController extends Controller
 {
     public function availableExams()
     {
+        $student = auth('student')->user();
         $exams = Exam::where('is_active', true)
             ->where(function ($query) {
                 $query->whereNull('start_time')
@@ -24,6 +25,9 @@ class StudentExamController extends Controller
             ->where(function ($query) {
                 $query->whereNull('end_time')
                     ->orWhere('end_time', '>=', now());
+            })
+            ->whereHas('subject',function ($query) use ($student) {
+                $query->where('stage_id',$student->stage_id)->where('grade_id',$student->grade_id)->where('division_id',$student->division_id);
             })
             ->withCount('questions')
             ->with('creator:id,name')
@@ -39,10 +43,9 @@ class StudentExamController extends Controller
                 'message' => 'This exam is not available'
             ], 403);
         }
-
         // Check if student already attempted
         $existingAttempt = ExamAttempt::where('exam_id', $exam->id)
-            ->where('student_id', auth()->id())
+            ->where('student_id', auth('student')->id())
             ->first();
 
         if ($existingAttempt) {
@@ -63,7 +66,7 @@ class StudentExamController extends Controller
         try {
             $attempt = ExamAttempt::create([
                 'exam_id' => $exam->id,
-                'student_id' => auth()->id(),
+                'student_id' => auth('student')->id(),
                 'started_at' => now(),
                 'answers' => []
             ]);

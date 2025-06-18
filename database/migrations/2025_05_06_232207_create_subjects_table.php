@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name_ar');
             $table->foreignId('stage_id')->nullable()->constrained();
             $table->foreignId('grade_id')->nullable()->constrained();
+            $table->foreignId('division_id')->nullable()->constrained();
             $table->timestamps();
         });
     }

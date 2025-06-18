@@ -16,8 +16,13 @@ class ExamController extends Controller
     public function index(): ResourceCollection
     {
         $exams = Exam::with(['questions', 'creator:id,name'])
-            ->withCount('questions')
-            ->paginate(10);
+            ->withCount('questions');
+        if(Request()->has('paginate')){
+            $perPage = Request()->input('per_page', 15);
+            $exams = $exams->paginate($perPage);
+        }
+
+            $exams = $exams->get();
 
         return ExamResource::collection($exams);
     }
@@ -41,6 +46,7 @@ class ExamController extends Controller
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
                 'created_by' => auth()->id(),
+                'subject_id' => $request->subject_id,
             ]);
 
             foreach ($request->questions as $index => $questionData) {
@@ -88,6 +94,7 @@ class ExamController extends Controller
                 'duration_minutes' => $request->duration_minutes,
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
+                'subject_id' => $request->subject_id,
             ]);
 
             // Delete existing questions

@@ -20,7 +20,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamp('start_time')->nullable();
             $table->timestamp('end_time')->nullable();
-            $table->foreignId('created_by')->constrained('users');
+            $table->foreignId('created_by')->nullable()->constrained('users');
+            $table->foreignId('subject_id')->nullable()->constrained('subjects');
             $table->timestamps();
         });
     }
