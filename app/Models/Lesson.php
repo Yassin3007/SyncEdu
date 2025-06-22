@@ -30,4 +30,12 @@ class Lesson extends Model
     public function division(){
         return $this->belongsTo(Division::class);
     }
+
+    public function getNextLessonAttribute()
+    {
+        return self::where('teacher_id', $this->teacher_id)
+            ->where('day', '>', $this->day)
+            ->orderBy('day')
+            ->first();
+    }
 }

@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('exam_id')->constrained('exams')->onDelete('cascade');
+            $table->foreignId('exam_id')->nullable()->constrained('exams')->onDelete('cascade');
+            $table->foreignId('homework_id')->nullable()->constrained('homeworks')->onDelete('cascade');
             $table->string('type'); // 'multiple_choice', 'written', 'true_false'
             $table->text('question_text');
             $table->decimal('marks', 8, 2);

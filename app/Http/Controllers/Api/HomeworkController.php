@@ -1,52 +1,56 @@
 <?php
-// app/Http/Controllers/ExamController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\ExamRequest;
-use App\Http\Resources\ExamResource;
-use App\Models\Exam;
+use App\Http\Requests\HomeworkRequest;
+use App\Http\Resources\HomeworkResource;
+use App\Models\Homework;
+use App\Models\Lesson;
 use App\Models\Question;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class ExamController extends Controller
+class HomeworkController extends Controller
 {
-    public function index(): ResourceCollection
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
     {
-        $exams = Exam::with(['questions', 'creator:id,name'])
+        $homeworks = Homework::with(['questions', 'creator:id,name'])
             ->withCount('questions');
         if(Request()->has('paginate')){
             $perPage = Request()->input('per_page', 15);
-            $exams = $exams->paginate($perPage);
+            $homeworks = $homeworks->paginate($perPage);
         }
 
-            $exams = $exams->get();
+        $homeworks = $homeworks->get();
 
-        return ExamResource::collection($exams);
+        return HomeworkResource::collection($homeworks);
     }
 
-    public function show(Exam $exam): ExamResource
-    {
-        $exam->load(['questions', 'creator:id,name']);
-
-        return new ExamResource($exam);
-    }
-
-    public function store(ExamRequest $request)
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(HomeworkRequest $request)
     {
         try {
             DB::beginTransaction();
-
-            $exam = Exam::create([
+            $lesson = Lesson::findOrFail($request->lesson_id);
+            $next_lesson = $lesson->next_lesson;
+            $start_time = Carbon::createFromFormat('Y-m-d H:i:s', $lesson->day . ' ' . $lesson->end);
+            $end_time = Carbon::createFromFormat('Y-m-d H:i:s', $next_lesson->day . ' ' . $next_lesson->start);
+            $homework = Homework::create([
                 'title' => $request->title,
                 'description' => $request->description,
-                'duration_minutes' => $request->duration_minutes,
-                'start_time' => $request->start_time,
-                'end_time' => $request->end_time,
+                'start_time' => $start_time,
+                'end_time' => $end_time,
                 'created_by' => auth()->id(),
                 'subject_id' => $request->subject_id,
+                'lesson_id' => $request->lesson_id,
             ]);
 
             foreach ($request->questions as $index => $questionData) {
@@ -64,41 +68,56 @@ class ExamController extends Controller
                     $question->options = ['True', 'False'];
                 }
 
-                $exam->questions()->save($question);
+                $homework->questions()->save($question);
             }
 
-            $exam->calculateTotalMarks();
+            $homework->calculateTotalMarks();
 
             DB::commit();
 
-            return new ExamResource($exam);
+            return new HomeworkResource($homework);
 
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
-                'message' => 'Failed to create exam',
+                'message' => 'Failed to create homework',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function update(ExamRequest $request, Exam $exam)
+    /**
+     * Display the specified resource.
+     */
+    public function show(Homework $homework): HomeworkResource
+    {
+        $homework->load(['questions', 'creator:id,name']);
+
+        return new HomeworkResource($homework);
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(HomeworkRequest $request, Homework $homework)
     {
         try {
             DB::beginTransaction();
 
-            $exam->update([
+            $homework->update([
                 'title' => $request->title,
                 'description' => $request->description,
                 'duration_minutes' => $request->duration_minutes,
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
                 'subject_id' => $request->subject_id,
+                'lesson_id' => $request->lesson_id,
             ]);
 
             // Delete existing questions
-            $exam->questions()->delete();
+            $homework->questions()->delete();
 
             // Create new questions
             foreach ($request->questions as $index => $questionData) {
@@ -116,48 +135,51 @@ class ExamController extends Controller
                     $question->options = ['True', 'False'];
                 }
 
-                $exam->questions()->save($question);
+                $homework->questions()->save($question);
             }
 
-            $exam->calculateTotalMarks();
+            $homework->calculateTotalMarks();
 
             DB::commit();
 
-            return new ExamResource($exam);
+            return new HomeworkResource($homework);
 
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
-                'message' => 'Failed to update exam',
+                'message' => 'Failed to update homework',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function destroy(Exam $exam): JsonResponse
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Homework $homework)
     {
         try {
-            $exam->delete();
+            $homework->delete();
 
             return response()->json([
-                'message' => 'Exam deleted successfully'
+                'message' => 'Homework deleted successfully'
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to delete exam',
+                'message' => 'Failed to delete Homework',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function toggleStatus(Exam $exam): JsonResponse
+    public function toggleStatus(Homework $homework): JsonResponse
     {
-        $exam->update(['is_active' => !$exam->is_active]);
+        $homework->update(['is_active' => !$homework->is_active]);
 
         return response()->json([
-            'message' => 'Exam status updated successfully',
-            'exam' => new ExamResource($exam)
+            'message' => 'Homework status updated successfully',
+            'homework' => new HomeworkResource($homework)
         ]);
     }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DistrictController;
 use App\Http\Controllers\Api\ExamController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\HomeworkController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\TableController;
 use App\Http\Controllers\Api\PermissionController;
@@ -100,6 +101,11 @@ Route::apiResource('exams', ExamController::class);
 Route::patch('exams/{exam}/toggle-status', [ExamController::class, 'toggleStatus']);
 
 
+
+// homework routes
+
+Route::apiResource('homeworks', HomeworkController::class);
+Route::patch('homeworks/{homework}/toggle-status', [HomeworkController::class, 'toggleStatus']);
 
 
 
@@ -202,25 +208,29 @@ Route::prefix('student')->group(function () {
         Route::post('/change-password', [StudentAuthController::class, 'changePassword']);
         Route::post('/reset-password', [StudentAuthController::class, 'resetPassword']);
         Route::post('/logout', [StudentAuthController::class, 'logout']);
+
+
+
+        // Get available exams for student
+        Route::get('exams', [StudentExamController::class, 'availableExams']);
+
+        // Start an exam
+        Route::post('exams/{exam}/start', [StudentExamController::class, 'startExam']);
+
+        // Submit answer for a question
+        Route::post('attempts/{attempt}/answer', [StudentExamController::class, 'submitAnswer']);
+
+        // Submit complete exam
+        Route::post('attempts/{attempt}/submit', [StudentExamController::class, 'submitExam']);
+
+        // Get exam results
+        Route::get('attempts/{attempt}/results', [StudentExamController::class, 'examResults']);
+
+        // Get my exam attempts
+        Route::get('my-attempts', [StudentExamController::class, 'myAttempts']);
     });
 
-    // Get available exams for student
-    Route::get('exams', [StudentExamController::class, 'availableExams']);
 
-    // Start an exam
-    Route::post('exams/{exam}/start', [StudentExamController::class, 'startExam']);
-
-    // Submit answer for a question
-    Route::post('attempts/{attempt}/answer', [StudentExamController::class, 'submitAnswer']);
-
-    // Submit complete exam
-    Route::post('attempts/{attempt}/submit', [StudentExamController::class, 'submitExam']);
-
-    // Get exam results
-    Route::get('attempts/{attempt}/results', [StudentExamController::class, 'examResults']);
-
-    // Get my exam attempts
-    Route::get('my-attempts', [StudentExamController::class, 'myAttempts']);
 });
 
 
